@@ -57,9 +57,9 @@ class MafiaBot:
                     db[str(user_input.chat.id)]['Status'] = "not_active"
                     self.bot.send_message(user_input.chat.id, "Shift status updated to Non-Active State..") 
                 else:
-                    self.bot.send_message(user_input.chat.id, "Erro in Shift Ending....")    
+                    self.bot.send_message(user_input.chat.id, "Error in Shift Ending....")    
             elif user_input.text == "MENU":
-                self.bot.send_message(user_input.chat.id, "Under Devlopment!")
+                self.bot.send_message(user_input.chat.id, "Under Devlopment! Make payment for further things...")
             else:
                 self.bot.send_message(user_input.chat.id, f"Your Current Shift Mode is: {db[str(user_input.chat.id)]['Status']}\nsomething fishy, huh? Contact the Thug!")
         else:
