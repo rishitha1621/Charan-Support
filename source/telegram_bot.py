@@ -36,6 +36,7 @@ class MafiaBot:
                 self.bot.send_message(user_input.chat.id, "shift status updated to Active, Press here to --> /sort <--")
                 
             elif user_input.text == "End Shift" and result_dict['shift_status'] == 'Active':  
+                self.bot.send_message(user_input.chat.id, "De activating the Shift")
                 user_work = data_processor.cloud_database.get_user_work(db[str(user_input.chat.id)]['Shift_Tag'])
                 excel_path = f'excel/{data_processor.Utilities.generate_random_name()}excel_file.xlsx'
                 query = f"SELECT * FROM user_work WHERE user_id='{user_input.chat.id}' and Shift_tag='{db[str(user_input.chat.id)]['Shift_Tag']}'"
