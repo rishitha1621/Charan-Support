@@ -9,26 +9,6 @@ class Utilities:
     generate_shift_tag = lambda: ''.join(random.choices(string.ascii_uppercase, k=4) + random.choices(string.digits, k=3)) # --> creates a name with 3 digits 
     generate_random_name = lambda: ''.join(random.choices(string.ascii_lowercase, k=4)) # --> Generate random name for excel , In future the above function can be merged into this .. for enhnacemnt
 
-
-def extract_info(text):
-    patterns = [re.compile(r"Name：(?P<name>.+?)\n\nAccount：(?P<account>\d+)\n\nBank：(?P<bank>.+?)\n\nIFSC：(?P<ifsc>\w+)\n\n(?P<amount>\d+)"),
-                re.compile(r"Name：(?P<name>.+)\nAccount/Address：(?P<account>\d+)\nBank：(?P<bank>.+)\nIFSC：(?P<ifsc>\w+)\n(?P<amount>\d+)"),
-                re.compile(r"Name:\s*(?P<name>.+?)\s*account:\s*(?P<account>\d+)\s*Bank:\s*(?P<bank>.+?)\s*IFSC:\s*(?P<ifsc>\w+)\s*Help me transfer the amount：(?P<amount>\d+)"),
-                re.compile(r"Name:\s*(?P<name>.+?)\s*account:\s*(?P<account>\d+)\s*Bank:\s*(?P<bank>.+?)\s*IFSC:\s*(?P<ifsc>\w+)\s*(?P<amount>\d+)"),
-                re.compile(r"Name:\s*(?P<name>.+?)\s*Account Number:\s*(?P<account>\d+)\s*IFSC Code:\s*(?P<ifsc>\w+)\s*(?P<bank>.+?)\s*(?P<amount>\d+)"),
-                re.compile(r"Name：(?P<name>.*?)\n\nAccount：(?P<account>.*?)\n\nBank：(?P<bank>.*?)\n\nIFSC：(?P<ifsc>.*?)\n\n(?P<amount>\d+)"),
-                re.compile(r"Name：(?P<name>.+?)\s*Account/Address：(?P<account>\d+)\s*Bank：(?P<bank>.+?)\s*IFSC：(?P<ifsc>\w+)\s*(?P<amount>\d+)")]
-
-    for pattern in patterns:
-        match = pattern.search(text)
-        if match:
-            info = match.groupdict()
-            info['amount'] = int(info['amount'])
-            return info
-    print(text)
-    return {"response": "No matching pattern found to extract information"}
-
-
 class cloud_database:
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     creds_json = json.loads(os.environ['g_creds'])
@@ -91,14 +71,25 @@ class cloud_database:
 
 
 
-# colls = ['account', 'amount', 'bank', 'ifsc', 'name', 'trans_time', 'trans_date', 'user_id', 'user_name', 'Status', 'transaction_id', 'Shift_tag']
-
-
-
-
-
-
-
-    # pattern1 = r"Name：\s*(.+)\s*account：\s*(\d+)\s*Bank：\s*(.+)\s*IFSC：\s*(\w+)\s*Help me transfer the amount：(\d+)"
-    # pattern2 = r"Name：\s*(.+)\s*account：\s*(\d+)\s*Bank：\s*(.+)\s*IFSC：\s*(\w+)\s*(\d+)"
-    # pattern3 = r'Name：\s*(.+)\s*account：\s*(\d+)\s*Bank：\s*(.+)\s*IFSC：\s*(\w+)\s*(\d+)'
+def extract_info(text):
+    patterns = [ re.compile(r"Name:\s*(?P<name>.+?)\s+Account/Address:\s*(?P<account>\d+)\s+Bank:\s*(?P<bank>.+?)\s+IFSC:\s*(?P<ifsc>\w+)\s+Help me transfer the amount：(?P<amount>\d+)"),
+        re.compile(r"Name：\s*(?P<name>.+?)\s*account：\s*(?P<account>\d+)\s*Bank：\s*(?P<bank>.+?)\s*IFSC：\s*(?P<ifsc>\w+)\s*\n(?P<amount>\d+)"),
+        re.compile(r"Name:\s*(?P<name>.+?)\s*account:\s*(?P<account>\d+)\s*Bank:\s*(?P<bank>.+?)\s*IFSC:\s*(?P<ifsc>\w+)\s*Help me transfer the amount：(?P<amount>\d+)"),
+        re.compile(r"Name:\s*(?P<name>.+?)\s*account:\s*(?P<account>\d+)\s*Bank:\s*(?P<bank>.+?)\s*IFSC:\s*(?P<ifsc>\w+)\s*(?P<amount>\d+)"),
+        re.compile(r"Name:\s*(?P<name>.+?)\s*Account Number:\s*(?P<account>\d+)\s*IFSC Code:\s*(?P<ifsc>\w+)\s*(?P<bank>.+?)\s*(?P<amount>\d+)"),
+        re.compile(r"Name：(?P<name>.*?)\n\nAccount：(?P<account>.*?)\n\nBank：(?P<bank>.*?)\n\nIFSC：(?P<ifsc>.*?)\n\n(?P<amount>\d+)"),
+        re.compile(r"Name：(?P<name>.+?)\s*Account/Address：(?P<account>\d+)\s*Bank：(?P<bank>.+?)\s*IFSC：(?P<ifsc>\w+)\s*(?P<amount>\d+)"),
+        re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>.+)\nIFSC:\s*(?P<ifsc>\w+)\nHelp me transfer the amount\s*：\s*(?P<amount>\d+)"),
+        re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\s+Bank Account Number\s*:\s*(?P<account>\d+)\s+Bank Name\s*:\s*(?P<bank>.+)\s+IFSC:\s*(?P<ifsc>\w+)\s+Help me transfer the amount\s*：\s*(?P<amount>\d+)"),
+        re.compile(r"Name：(?P<name>.+?)\s+Account：(?P<account>\d+)\s+Bank：(?P<bank>.+?)\s+IFSC：(?P<ifsc>\w+)\s+(?P<amount>\d+)"),
+        re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>.+)\nIFSC:\s*(?P<ifsc>\w+)\nHelp me transfer the amount\s*：\s*(?P<amount>\d+)")]  
+        
+    for pattern in patterns:
+        match = pattern.search(text)
+        if match:
+            info = match.groupdict()
+            info['amount'] = int(info['amount'])
+            return info
+    print(text)
+    return {"response": "No matching pattern found to extract information"}
+    return False
