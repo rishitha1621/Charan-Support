@@ -6,7 +6,7 @@ import replit_keep_alive
 
 if __name__ == "__main__":
     bot_instance = telegram_bot.MafiaBot()
-    replit_keep_alive.WaitressStart("Hello World")
+    replit_keep_alive.WaitressStart("Charan ka Mafia................")
     bot_instance.run()
 
 
