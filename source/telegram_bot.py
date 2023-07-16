@@ -25,13 +25,34 @@ class MafiaBot:
                 self.bot.register_next_step_handler(user_input, self.data_sorter)
             elif (db[str(message.chat.id)]['Status']) == "not_active":
                 self.bot.send_message(message.chat.id, "shift status is not active!")
+                
+        @self.bot.message_handler(commands=['add_money'])
+        def add_money(message):
+            print(f"Bot working for user First name: {message.from_user.first_name} Last name: {message.from_user.last_name} and ID : {message.chat.id}")
+            user_input = self.bot.send_message(message.chat.id,"Hello Amigo! Enter the amount updated to the wallet")
+            self.bot.register_next_step_handler(user_input, self.paisa_updater)
+
+    def paisa_updater(self, user_input):
+        self.bot.send_message(user_input.chat.id, "Updating wallet balance , wait...") 
+        result_dict = data_processor.cloud_database.get_db(user_input.chat.id)
+        if result_dict:
+            updated_wallet = int(result_dict['amount_available']) + int(user_input.text)
+            updater = data_processor.cloud_database.update_data(str(user_input.chat.id), 'amount_available', updated_wallet)
+            if updater == True:
+                self.bot.send_message(user_input.chat.id, f"Available balance Updated to {updated_wallet}...")
+            else:
+                self.bot.send_message(user_input.chat.id, "Contact Charan...")
+        else:
+            self.bot.send_message(user_input.chat.id, "Contact Charan...")
+            
+        
 
     def start_handler(self, user_input):
         result_dict = data_processor.cloud_database.get_db(user_input.chat.id)
         if result_dict:
             if user_input.text == "Start Shift" and result_dict['shift_status'] == 'not_active':
                 self.bot.send_message(user_input.chat.id, "Activating the shift...") 
-                data_processor.cloud_database.update_status(str(user_input.chat.id), 'Active')
+                data_processor.cloud_database.update_data(str(user_input.chat.id), 'shift_status', 'Active')
                 db[user_input.chat.id] = {"user_id" : user_input.chat.id,"Status" : "Active", "Shift_Tag" : data_processor.Utilities.generate_shift_tag()}
                 self.bot.send_message(user_input.chat.id, "shift status updated to Active, Press here to --> /sort <--")
                 
@@ -52,7 +73,8 @@ class MafiaBot:
                     self.bot.send_document(user_input.chat.id,file,caption="Excel file")
                 os.remove(excel_path)
                 self.bot.send_message(user_input.chat.id, f"Total Transactions : {Total_transactions}\n Total Debit Amount : {total_debit['total_debit'].iloc[0]}\n De-Activating the Shift Tag : {db[str(user_input.chat.id)]['Shift_Tag']}") 
-                updater = data_processor.cloud_database.update_status(str(user_input.chat.id), 'not_active')
+                updater = data_processor.cloud_database.update_data(str(user_input.chat.id), 'shift_status', 'not_active')
+                
                 if updater == True:
                     db[str(user_input.chat.id)]['Status'] = "not_active"
                     self.bot.send_message(user_input.chat.id, "Shift status updated to Non-Active State..") 

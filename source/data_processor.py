@@ -29,19 +29,6 @@ class cloud_database:
             print(f"User ID {user_id} not found in the worksheet")
             return None
        
-    def update_status(user_id, new_status):
-        print("Updating mode...")
-        client = gspread.authorize(cloud_database.creds)
-        worksheet = client.open('Authorized_bots').sheet1
-        try:
-            cell = worksheet.find(user_id)
-            column_index = worksheet.find('shift_status').col
-            worksheet.update_cell(cell.row, column_index, new_status)
-            print("Updated successfully")
-            return True
-        except gspread.CellNotFound:
-            print(f"User ID {user_id} not found in the worksheet")
-            return False
 
     def append_data(data_dict):
         try:
@@ -50,21 +37,18 @@ class cloud_database:
             user_data = cloud_database.get_db(data_dict['user_id'])
             data_dict['user_name'] = user_data.get('user_name')
             available_amount =  user_data.get('amount_available')
-            
-            new_amount =int(available_amount) - int(data_dict['amount']) 
-            print('new_amount', new_amount)
-            
+            data_dict['cut_amount'] = int(available_amount) - int(data_dict['amount'])
             data_dict['Status'] = data_dict.get('Status')
             values = [data_dict.get(key) for key in ['account', 'amount', 'bank', 'ifsc', 'name',
                                                      'trans_time', 'trans_date', 'user_id', 'user_name',
-                                                     'Status', 'transaction_id', 'Shift_tag']]
+                                                     'Status', 'transaction_id', 'Shift_tag','cut_amount']]
             client = gspread.authorize(cloud_database.creds)
             worksheet = client.open('transactions_recorder').sheet1
             worksheet.append_row(values)
             print("Data in Sheets is Updated Successfully...")
             # Updating amount
             if data_dict['Status'] == 'Success':
-                a_update = cloud_database.update_amount(data_dict['user_id'], new_amount)
+                a_update = cloud_database.update_data(data_dict['user_id'], 'amount_available', data_dict['cut_amount'])
                 if a_update == True:
                     return True
                 else:
@@ -81,19 +65,19 @@ class cloud_database:
         headers = data.pop(0)
         dframe = pd.DataFrame(data, columns=headers)
         return dframe
-
-    def update_amount(user_id, new_amount):
-        print("Updating Available amount mode...")
+      
+    def update_data(user_id, field, new_value):
+        print(f"Updating {field}...")
+        client = gspread.authorize(cloud_database.creds)
+        worksheet = client.open('Authorized_bots').sheet1
         try:
-            client = gspread.authorize(cloud_database.creds)
-            worksheet = client.open('Authorized_bots').sheet1
             cell = worksheet.find(str(user_id))
-            column_index = worksheet.find('amount_available').col
-            worksheet.update_cell(cell.row, column_index, new_amount)
-            print("Amount Updated successfully")
+            column_index = worksheet.find(field).col
+            worksheet.update_cell(cell.row, column_index, new_value)
+            print(f"{field} Updated successfully")
             return True
         except gspread.CellNotFound:
-            print(f"For User ID {user_id}, unable to update the amount")
+            print(f"User ID {user_id} not found in the worksheet")
             return False
 
 def extract_info(text):
@@ -117,5 +101,4 @@ def extract_info(text):
             info = match.groupdict()
             info['amount'] = int(info['amount'])
             return info
-    print(text)
     return False
