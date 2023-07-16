@@ -83,7 +83,7 @@ class MafiaBot:
             self.bot.register_next_step_handler(user_input, self.get_status, information)
             return
         else:
-            self.bot.send_message(user_input.chat.id,"No pattern Found For the text")
+            self.bot.send_message(user_input.chat.id,"No pattern Found For the text, Plese enter amount")
             self.bot.send_message(5579239229, user_input.text)
 
     def get_status(self,user_input,  information):

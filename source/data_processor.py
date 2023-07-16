@@ -1,4 +1,4 @@
-import os, pytz, time, json, random, gspread, re, string
+import os, pytz, time, json, random, gspread, string, re
 from datetime import datetime
 import pandas as pd
 from google.oauth2.service_account import Credentials
@@ -11,10 +11,9 @@ class Utilities:
 
 class cloud_database:
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    creds_json = json.loads(os.environ['g_creds'])
-    creds = Credentials.from_service_account_info(info=creds_json, scopes=scope)
+    creds_json_data = json.loads(os.environ['g_creds'])
+    creds = Credentials.from_service_account_info(info=creds_json_data, scopes=scope)
 
-    
     def get_db(user_id):
         client = gspread.authorize(cloud_database.creds)
         worksheet = client.open('Authorized_bots').sheet1
@@ -22,14 +21,14 @@ class cloud_database:
             cell = worksheet.find(str(user_id))
             row = cell.row
             row_data = worksheet.row_values(row)
-            colls = ['user_id', 'user_name', 'Phone number', 'account', 'start_date', 'end_date', 'shift_status']
+            colls = ['user_id', 'user_name', 'Phone number', 'account', 'start_date', 'end_date', 'shift_status', 'amount_available']
             data_dict = dict(zip(colls, row_data))
+            worksheet = None
             return data_dict
         except gspread.CellNotFound:
             print(f"User ID {user_id} not found in the worksheet")
             return None
-    
-    
+       
     def update_status(user_id, new_status):
         print("Updating mode...")
         client = gspread.authorize(cloud_database.creds)
@@ -46,9 +45,15 @@ class cloud_database:
 
     def append_data(data_dict):
         try:
+            # Updating transaction
             print("Data in Sheets is Trying to Update...")
             user_data = cloud_database.get_db(data_dict['user_id'])
             data_dict['user_name'] = user_data.get('user_name')
+            available_amount =  user_data.get('amount_available')
+            
+            new_amount =int(available_amount) - int(data_dict['amount']) 
+            print('new_amount', new_amount)
+            
             data_dict['Status'] = data_dict.get('Status')
             values = [data_dict.get(key) for key in ['account', 'amount', 'bank', 'ifsc', 'name',
                                                      'trans_time', 'trans_date', 'user_id', 'user_name',
@@ -57,9 +62,17 @@ class cloud_database:
             worksheet = client.open('transactions_recorder').sheet1
             worksheet.append_row(values)
             print("Data in Sheets is Updated Successfully...")
-            return True
+            # Updating amount
+            if data_dict['Status'] == 'Success':
+                a_update = cloud_database.update_amount(data_dict['user_id'], new_amount)
+                if a_update == True:
+                    return True
+                else:
+                    return False
+            else:
+                return True
         except Exception as e:
-            return e
+            print(e)
 
     def get_user_work(shift_tag):
         client = gspread.authorize(cloud_database.creds)
@@ -69,7 +82,19 @@ class cloud_database:
         dframe = pd.DataFrame(data, columns=headers)
         return dframe
 
-
+    def update_amount(user_id, new_amount):
+        print("Updating Available amount mode...")
+        try:
+            client = gspread.authorize(cloud_database.creds)
+            worksheet = client.open('Authorized_bots').sheet1
+            cell = worksheet.find(str(user_id))
+            column_index = worksheet.find('amount_available').col
+            worksheet.update_cell(cell.row, column_index, new_amount)
+            print("Amount Updated successfully")
+            return True
+        except gspread.CellNotFound:
+            print(f"For User ID {user_id}, unable to update the amount")
+            return False
 
 def extract_info(text):
     patterns = [ re.compile(r"Name:\s*(?P<name>.+?)\s+Account/Address:\s*(?P<account>\d+)\s+Bank:\s*(?P<bank>.+?)\s+IFSC:\s*(?P<ifsc>\w+)\s+Help me transfer the amount：(?P<amount>\d+)"),
@@ -83,7 +108,8 @@ def extract_info(text):
         re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\s+Bank Account Number\s*:\s*(?P<account>\d+)\s+Bank Name\s*:\s*(?P<bank>.+)\s+IFSC:\s*(?P<ifsc>\w+)\s+Help me transfer the amount\s*：\s*(?P<amount>\d+)"),
         re.compile(r"Name：(?P<name>.+?)\s+Account：(?P<account>\d+)\s+Bank：(?P<bank>.+?)\s+IFSC：(?P<ifsc>\w+)\s+(?P<amount>\d+)"),
         re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>.+)\nIFSC:\s*(?P<ifsc>\w+)\nHelp me transfer the amount\s*：\s*(?P<amount>\d+)"),
-        re.compile(r'Bank Account Name\s*:\s*(?P<name>\w+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>\w+\s*\w*)\nIFSC\s*:\s*(?P<ifsc>[A-Z0-9]+)\n(?P<amount>\d+)')]  
+        re.compile(r'Bank Account Name\s*:\s*(?P<name>\w+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>\w+\s*\w*)\nIFSC\s*:\s*(?P<ifsc>[A-Z0-9]+)\n(?P<amount>\d+)'),
+        re.compile(r"Name:\s*(?P<name>.+?)\nAccount/Address:\s*(?P<account>\d+)\nBank:\s*(?P<bank>.+?)\nIFSC:\s*(?P<ifsc>.+?)\n(?P<amount>\d+)")]  
         
     for pattern in patterns:
         match = pattern.search(text)
@@ -92,5 +118,4 @@ def extract_info(text):
             info['amount'] = int(info['amount'])
             return info
     print(text)
-    return {"response": "No matching pattern found to extract information"}
     return False
