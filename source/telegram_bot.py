@@ -36,6 +36,7 @@ class MafiaBot:
         self.bot.send_message(user_input.chat.id, "Updating wallet balance , wait...") 
         result_dict = data_processor.cloud_database.get_db(user_input.chat.id)
         if result_dict:
+            self.bot.send_message(user_input.chat.id, f"Available wallet balance is {int(result_dict['amount_available'])}") 
             updated_wallet = int(result_dict['amount_available']) + int(user_input.text)
             updater = data_processor.cloud_database.update_data(str(user_input.chat.id), 'amount_available', updated_wallet)
             if updater == True:
@@ -45,8 +46,6 @@ class MafiaBot:
         else:
             self.bot.send_message(user_input.chat.id, "Contact Charan...")
             
-        
-
     def start_handler(self, user_input):
         result_dict = data_processor.cloud_database.get_db(user_input.chat.id)
         if result_dict:
