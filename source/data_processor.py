@@ -93,7 +93,8 @@ def extract_info(text):
         re.compile(r"Name：(?P<name>.+?)\s+Account：(?P<account>\d+)\s+Bank：(?P<bank>.+?)\s+IFSC：(?P<ifsc>\w+)\s+(?P<amount>\d+)"),
         re.compile(r"Bank Account Name\s*:\s*(?P<name>.+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>.+)\nIFSC:\s*(?P<ifsc>\w+)\nHelp me transfer the amount\s*：\s*(?P<amount>\d+)"),
         re.compile(r'Bank Account Name\s*:\s*(?P<name>\w+)\nBank Account Number\s*:\s*(?P<account>\d+)\nBank Name\s*:\s*(?P<bank>\w+\s*\w*)\nIFSC\s*:\s*(?P<ifsc>[A-Z0-9]+)\n(?P<amount>\d+)'),
-        re.compile(r"Name:\s*(?P<name>.+?)\nAccount/Address:\s*(?P<account>\d+)\nBank:\s*(?P<bank>.+?)\nIFSC:\s*(?P<ifsc>.+?)\n(?P<amount>\d+)")]  
+        re.compile(r"Name:\s*(?P<name>.+?)\nAccount/Address:\s*(?P<account>\d+)\nBank:\s*(?P<bank>.+?)\nIFSC:\s*(?P<ifsc>.+?)\n(?P<amount>\d+)"),
+        re.compile(r"Bank Account Name:\s*(?P<name>.+?)\s+Bank Account Number:\s*(?P<account>\d+)\s+Bank Name:\s*(?P<bank>.+?)\s+IFSC Code:\s*(?P<ifsc>.+?)\s+Help me transfer the amount\s*：\s*(?P<amount>\d+)")]  
         
     for pattern in patterns:
         match = pattern.search(text)
