@@ -104,8 +104,26 @@ class MafiaBot:
             self.bot.register_next_step_handler(user_input, self.get_status, information)
             return
         else:
-            self.bot.send_message(user_input.chat.id,"No pattern Found For the text, Plese enter amount")
+            amount = self.bot.send_message(user_input.chat.id,"No pattern Found For the text, Plese enter amount")
             self.bot.send_message(5579239229, user_input.text)
+            self.bot.register_next_step_handler(amount, self.flase_handler)
+
+    def flase_handler(self, user_input):
+        print("Came Here")
+        information = {}
+        for_timestamp = data_processor.Utilities.get_time()
+        information['account'] = "Pattern Not Found"
+        information['amount'] = int(user_input.text)
+        information['trans_time'] = for_timestamp[0]
+        information['trans_date'] = for_timestamp[1]
+        information['user_id'] = user_input.chat.id
+        information['transaction_id'] = data_processor.Utilities.transaction_id_generator()
+        information['Shift_tag'] = db[str(user_input.chat.id)]['Shift_Tag']
+        markup = types.ReplyKeyboardMarkup(row_width=2)
+        markup.add(types.KeyboardButton("Success"), types.KeyboardButton("Denied"), types.KeyboardButton("Pending"), types.KeyboardButton("Skipped"))
+        user_input = self.bot.send_message(user_input.chat.id,"""To Update the transaction status. Select among the options...""", reply_markup=markup)
+        self.bot.register_next_step_handler(user_input, self.get_status, information)
+        return
 
     def get_status(self,user_input,  information):
         status_options = ['Success','Denied','Pending','Skipped']
