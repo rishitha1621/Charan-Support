@@ -1,4 +1,4 @@
-## --> Don't try to steal or experiment. This is production
+## --> Don't try to steal or experiment. This is production.
 
 
 from source import telegram_bot
