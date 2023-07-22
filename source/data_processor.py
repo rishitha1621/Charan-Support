@@ -107,13 +107,14 @@ def extract_info(text):
         re.compile(r"Bank Account Name\s*:\s*(?P<name>.*?)\s*Bank Account Number\s*:\s*(?P<account>\d+)\s*Bank Name\s*:\s*(?P<bank>.*?)\s*IFSC:\s*(?P<ifsc>.*?)\s*Help m/e transfer the amount\s*(?P<amount>\d+)"),
         re.compile(r"Bank account name - (?P<name>.+)\nBank account no - (?P<account>\d+)\nBank name - (?P<bank>.+)\s+IFSC- (?P<ifsc>\w+)\s+RS: (?P<amount>\d+)"),
         re.compile(r"BANK ACCOUNT NAME: (?P<name>\w+)\nBANK ACCOUNT NUMBER:(?P<account>\d+)\nBANK NAME:(?P<bank>[\w\s]+)\nIFSC :(?P<ifsc>[\w\d]+)\nHelp me transfer the amount ：(?P<amount>\d+)."),
-        re.compile(r"Bank Account Name\s*:\s*(?P<name>.*?)\s*Bank Account number\s*:\s*(?P<account>\d+)\s*Bank Name\s*:\s*(?P<bank>\w+)\s*IFSC Code\s*:\s*(?P<ifsc_code>\w+)\s*Help me transfer the amount\s*:\s*(?P<amount>\d+)")
+        re.compile(r"Bank Account Name\s*:\s*(?P<name>.*?)\s*Bank Account number\s*:\s*(?P<account>\d+)\s*Bank Name\s*:\s*(?P<bank>\w+)\s*IFSC Code\s*:\s*(?P<ifsc_code>\w+)\s*Help me transfer the amount\s*:\s*(?P<amount>\d+)"),
+        re.compile(r"Bank Account Name:-\s*(?P<name>.+)\s*Bank Account No:-\s*(?P<account>\d+)\s*Bank Name :-\s*(?P<bank>.+)\s*IFSC Code :-\s*(?P<ifsc>\w+)\s*(?P<amount>\d+)")
         ]
         
     for pattern in patterns:
         match = pattern.search(text)
         if match:
-            print("pattern:", pattern)
+            # print("pattern:", pattern)
             info = match.groupdict()
             info['amount'] = int(info['amount'])
             return info

